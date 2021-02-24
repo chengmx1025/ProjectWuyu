@@ -1,135 +1,95 @@
 /*
-	Strata by HTML5 UP
+	Future Imperfect by HTML5 UP
 	html5up.net | @ajlkn
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 */
 
 (function($) {
 
-	var settings = {
+	var	$window = $(window),
+		$body = $('body'),
+		$menu = $('#menu'),
+		$sidebar = $('#sidebar'),
+		$main = $('#main');
 
-		// Parallax background effect?
-			parallax: true,
+	// Breakpoints.
+		breakpoints({
+			xlarge:   [ '1281px',  '1680px' ],
+			large:    [ '981px',   '1280px' ],
+			medium:   [ '737px',   '980px'  ],
+			small:    [ '481px',   '736px'  ],
+			xsmall:   [ null,      '480px'  ]
+		});
 
-		// Parallax factor (lower = more intense, higher = less intense).
-			parallaxFactor: 20
+	// Play initial animations on page load.
+		$window.on('load', function() {
+			window.setTimeout(function() {
+				$body.removeClass('is-preload');
+			}, 100);
+		});
 
-	};
-
-	skel.breakpoints({
-		xlarge: '(max-width: 1800px)',
-		large: '(max-width: 1280px)',
-		medium: '(max-width: 980px)',
-		small: '(max-width: 736px)',
-		xsmall: '(max-width: 480px)'
-	});
-
-	$(function() {
-
-		var $window = $(window),
-			$body = $('body'),
-			$header = $('#header'),
-			$footer = $('#footer'),
-			$main = $('#main');
-
-		// Disable animations/transitions until the page has loaded.
-			$body.addClass('is-loading');
-
-			$window.on('load', function() {
-				$body.removeClass('is-loading');
+	// Menu.
+		$menu
+			.appendTo($body)
+			.panel({
+				delay: 500,
+				hideOnClick: true,
+				hideOnSwipe: true,
+				resetScroll: true,
+				resetForms: true,
+				side: 'right',
+				target: $body,
+				visibleClass: 'is-menu-visible'
 			});
 
-		// Touch?
-			if (skel.vars.mobile) {
+	// Search (header).
+		var $search = $('#search'),
+			$search_input = $search.find('input');
 
-				// Turn on touch mode.
-					$body.addClass('is-touch');
+		$body
+			.on('click', '[href="#search"]', function(event) {
 
-				// Height fix (mostly for iOS).
-					window.setTimeout(function() {
-						$window.scrollTop($window.scrollTop() + 1);
-					}, 0);
+				event.preventDefault();
 
-			}
+				// Not visible?
+					if (!$search.hasClass('visible')) {
 
-		// Fix: Placeholder polyfill.
-			$('form').placeholder();
+						// Reset form.
+							$search[0].reset();
 
-		// Prioritize "important" elements on medium.
-			skel.on('+medium -medium', function() {
-				$.prioritize(
-					'.important\\28 medium\\29',
-					skel.breakpoint('medium').active
-				);
+						// Show.
+							$search.addClass('visible');
+
+						// Focus input.
+							$search_input.focus();
+
+					}
+
 			});
 
-		// Footer.
-			skel.on('+medium', function() {
-				$footer.insertAfter($main);
+		$search_input
+			.on('keydown', function(event) {
+
+				if (event.keyCode == 27)
+					$search_input.blur();
+
+			})
+			.on('blur', function() {
+				window.setTimeout(function() {
+					$search.removeClass('visible');
+				}, 100);
 			});
 
-			skel.on('-medium !medium', function() {
-				$footer.appendTo($header);
+	// Intro.
+		var $intro = $('#intro');
+
+		// Move to main on <=large, back to sidebar on >large.
+			breakpoints.on('<=large', function() {
+				$intro.prependTo($main);
 			});
 
-		// Header.
-
-			// Parallax background.
-
-				// Disable parallax on IE (smooth scrolling is jerky), and on mobile platforms (= better performance).
-					if (skel.vars.browser == 'ie'
-					||	skel.vars.mobile)
-						settings.parallax = false;
-
-				if (settings.parallax) {
-
-					skel.on('change', function() {
-
-						if (skel.breakpoint('medium').active) {
-
-							$window.off('scroll.strata_parallax');
-							$header.css('background-position', 'top left, center center');
-
-						}
-						else {
-
-							$header.css('background-position', 'left 0px');
-
-							$window.on('scroll.strata_parallax', function() {
-								$header.css('background-position', 'left ' + (-1 * (parseInt($window.scrollTop()) / settings.parallaxFactor)) + 'px');
-							});
-
-						}
-
-					});
-
-					$window.on('load', function() {
-						$window.triggerHandler('scroll');
-					});
-
-				}
-
-		// Main Sections: Two.
-
-			// Lightbox gallery.
-				$window.on('load', function() {
-
-					$('#two').poptrox({
-						caption: function($a) { return $a.next('h3').text(); },
-						overlayColor: '#2c2c2c',
-						overlayOpacity: 0.85,
-						popupCloserText: '',
-						popupLoaderText: '',
-						selector: '.work-item a.image',
-						usePopupCaption: true,
-						usePopupDefaultStyling: false,
-						usePopupEasyClose: false,
-						usePopupNav: true,
-						windowMargin: (skel.breakpoint('small').active ? 0 : 50)
-					});
-
-				});
-
-	});
+			breakpoints.on('>large', function() {
+				$intro.prependTo($sidebar);
+			});
 
 })(jQuery);
